@@ -24,6 +24,10 @@ class Hotel:
         df.to_csv("hotels.csv", index=False)
 
 
+class SpaHotel(Hotel):
+    def book_spa_package(self):
+        pass
+
 class ReservationTicket:
 
     def __init__(self, customer_name, hotel_object):
@@ -34,6 +38,21 @@ class ReservationTicket:
         content = f"""
         Thank you for your reservation!
         Here is your booking data:
+        Name: {self.customer_name}
+        Hotel: {self.hotel.name}
+        """
+        return content
+
+
+class SpaReservationTicket:
+    def __init__(self, customer_name, hotel_object):
+        self.customer_name = customer_name
+        self.hotel = hotel_object
+
+    def generate(self):
+        content = f"""
+        Thank you for your SPA Reservation!
+        Here are your details:
         Name: {self.customer_name}
         Hotel: {self.hotel.name}
         """
@@ -54,7 +73,7 @@ class CreditCard:
 
 
 class SecureCreditCard(CreditCard):
-    def authenticate(self, given_password):
+    def is_authenticate(self, given_password):
         password = card_security_df.loc[card_security_df["number"] == self.card_number, "password"].squeeze()
         if password == given_password:
             return True
@@ -65,13 +84,13 @@ class SecureCreditCard(CreditCard):
 
 print(df)
 hotel_ID = int(input("Enter the id of the hotel: "))
-hotel = Hotel(hotel_ID)
+hotel = SpaHotel(hotel_ID)
 
 if hotel.is_available():
     number = input("Enter your credit card number: ")
     credit_card = SecureCreditCard(number=number)
     if credit_card.is_valid(expiration="12/26", holder="JOHN SMITH", cvc="123"):
-        if credit_card.authenticate(given_password="mypass"):
+        if credit_card.is_authenticate(given_password="mypass"):
             hotel.book()
             name = input("Enter your name: ")
             reservation_ticket = ReservationTicket(name, hotel)
@@ -80,5 +99,12 @@ if hotel.is_available():
             print("Card not authenticated successfully!")
     else:
         print("Credit card is not valid!")
+    spa_answer = input("Would you like to book a spa package? (yes/no): ")
+    if spa_answer == "yes":
+        hotel.book_spa_package()
+        spa_ticket = SpaReservationTicket(name, hotel)
+        print(spa_ticket.generate())
+    else:
+        pass
 else:
     print("Hotel is currently full.")
